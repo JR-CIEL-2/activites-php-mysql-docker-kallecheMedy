@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saisie et Tri du Tableau</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #tableauAffiche {
+            margin-top: 20px;
+        }
+        #medianeAffiche {
+            margin-top: 10px;
+        }
+    </style>
+    <script>
+        let tableau = []; // Tableau pour stocker les valeurs
+
+        // Fonction pour saisir les valeurs
+        function saisirValeur() {
+            let valeur = parseInt(prompt("Entrez une valeur supérieure à 0 (ou une valeur négative ou 0 pour terminer):"));
+
+            if (valeur > 0) {
+                tableau.push(valeur); // Ajoute la valeur au tableau
+                saisirValeur(); // Continue à demander des valeurs
+            } else {
+                // Si la valeur est inférieure ou égale à 0, on envoie le tableau au serveur
+                envoyerTableau();
+            }
+        }
+
+        // Fonction pour envoyer le tableau au serveur via AJAX (fetch ou $.ajax)
+        function envoyerTableau() {
+            // Utilisation de fetch pour envoyer les données au serveur
+            fetch('main2.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ tableau: tableau })
+            })
+            .then(response => response.json())  // Récupère la réponse du serveur
+            .then(data => {
+                // Affiche le tableau trié et la médiane
+                document.getElementById('tableauAffiche').textContent = `Tableau trié : [${data.tableau.join(", ")}]`;
+                document.getElementById('medianeAffiche').textContent = `Médiane : ${data.mediane}`;
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Saisie et Tri du Tableau</h1>
+   
+    <!-- Bouton pour démarrer la saisie -->
+    <button onclick="saisirValeur()">Démarrer la saisie des valeurs</button>
+
+    <!-- Affichage du tableau trié et de la médiane -->
+    <div id="tableauAffiche"></div>
+    <div id="medianeAffiche"></div>
+</body>
+</html>

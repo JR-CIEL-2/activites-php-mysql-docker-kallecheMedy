@@ -1,6 +1,7 @@
 <?php
 include 'statistique.php';
 include 'tri_selection.php';
+include 'read_tab.php';
 
 $salaires = [1500, 1700, 1800, 2000, 2200, 2500, 3000, 3300, 4000];
 $moyenne = (int)moyenne($salaires); 
