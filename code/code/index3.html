@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saisie et Tri du Tableau</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #resultats {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Saisie et Tri du Tableau</h1>
+        <p>Entrez un nombre supérieur à 0. Tapez un nombre ≤ 0 pour arrêter et envoyer le tableau.</p>
+        <input type="number" id="valeur" placeholder="Entrez un nombre" autofocus>
+        <button type="button" onclick="ajouterValeur()">Ajouter</button>
+        <div id="tableauCourant">
+            <strong>Tableau actuel :</strong> <span id="afficheTableau">[ ]</span>
+        </div>
+        <div id="resultats">
+            <p id="tableauAffiche"></p>
+            <p id="medianeAffiche"></p>
+        </div>
+    </div>
+
+    <script>
+        let tableau = []; // Initialisation du tableau
+
+        // Ajouter une valeur au tableau
+        function ajouterValeur() {
+            let valeur = parseInt(document.getElementById('valeur').value);
+
+            if (isNaN(valeur)) {
+                alert("Veuillez entrer un nombre valide.");
+                return;
+            }
+
+            if (valeur > 0) {
+                tableau.push(valeur); // Ajouter la valeur au tableau
+                document.getElementById('afficheTableau').textContent = `[${tableau.join(", ")}]`; 
+                document.getElementById('valeur').value = ""; // Effacer le champ de saisie
+            } else {
+                envoyerTableau(); // Envoyer le tableau lorsque l'utilisateur entre une valeur ≤ 0
+            }
+        }
+
+        // Envoyer le tableau au serveur et afficher les résultats
+        function envoyerTableau() {
+            if (tableau.length === 0) {
+                alert("Le tableau est vide. Veuillez entrer des valeurs avant d'envoyer.");
+                return;
+            }
+
+            fetch('https://e3978966-9184-49dc-87cb-f4101f9381c1.mock.pstmn.io/tab', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ tableau: tableau }) // Envoi du tableau en JSON
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP ${response.status}`); // Gérer les erreurs HTTP (comme 400 ou 500)
+                }
+                return response.json(); // Récupérer la réponse JSON
+            })
+            .then(data => {
+                // Vérification si la réponse contient les données attendues
+                if (data && data.tableau && Array.isArray(data.tableau) && data.mediane !== undefined) {
+                    // Affichage du tableau trié et de la médiane
+                    document.getElementById('tableauAffiche').textContent = `Tableau trié : [${data.tableau.join(", ")}]`;
+                    document.getElementById('medianeAffiche').textContent = `Médiane : ${data.mediane}`;
+                    tableau = []; // Réinitialisation du tableau après envoi
+                    document.getElementById('afficheTableau').textContent = `[ ]`; // Réinitialiser l'affichage du tableau
+                } else {
+                    throw new Error("La réponse du serveur est invalide ou incomplète.");
+                }
+            })
+            .catch(error => {
+                // Affichage d'un message d'erreur détaillé dans la console et une alerte
+                console.error('Erreur:', error);
+                alert("Une erreur s'est produite lors de l'envoi des données : " + error.message);
+            });
+        }
+    </script>
+</body>
+</html>
